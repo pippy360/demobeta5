@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <title>Improved Reverse Image Search</title>
+</head>
+
+<style>
+    .canvasInline {
+        display: inline-block;
+        float: left;
+        position: absolute;
+
+    }
+    .canvasWrapper {
+        display: block;
+        position: relative;
+        float: left;
+    }
+
+    .fixedWidth600px {
+        width: 302px;
+        height: 302px;
+    }
+
+    .fixedWidth400px {
+        width: 402px;
+        height: 402px;
+    }
+    .linebreak {
+        margin: auto;
+        align-content: center;
+    }
+    .frag {
+        width: 126px;
+        height: 126px;
+    }
+    canvas {
+        border: 1px solid black;
+    }
+    .demowrap {
+        text-align: left;
+        display: inline-block;
+    }
+
+    .basicFullDemoWrapper {
+        width: 1010px;
+    }
+    .equationDiv {
+        padding: 10px 0;
+    }
+    .footer {
+        margin-top: 100px;
+    }
+</style>
+
+
+
+<!--<canvas style="display: none" id="imageMods" width="200" height="200"></canvas>-->
+
+<style>
+    .ct-chart {
+        width: 600px;
+        height: 400px;
+    }
+    .ct-series-b .ct-point{
+        stroke: blue !important;
+    }
+</style>
+<body>
+<div style="font-size: 1em" class="container clearfix">
+    <div class="clearfix linebreak">
+        <div class="p-5">
+
+            <h1 style="margin: 30px 0">Improved Reverse Image Search</h1>
+            <hr>
+            <h2>The Problem</h2>
+            <p>
+                When using major reverse image search engines, a frequently encountered problem is the inability for the algorithms to match input images if they have been cropped, stretched, rotated or scaled. This means that we have situations where a minor manipulation of the image returns no results in the Google, Bing or Tineye databases.
+            </p>
+            <h2>The Aim</h2>
+            <p>
+                We want to be able to take a cropped, rotated, skewed and/or scaled image and match it to its original, unedited image or to any variation of the image which has had a 2D Affine Transformation [insert link to wikipedia article] applied to it. We only handle 2D Affine Transformations for two reasons: 1) They have special properties which we can exploit and 2) they cover most commonly-used digital transformations which are applied to images.
+            </p>
+            <p>
+                The algorithm we have designed allows us to quickly find image matches in a large database in either O(1) or log(n) time. Previously, we worked on this project:
+                <br>https://pippy360.github.io/transformationInvariantImageSearch/ which also offered an improvement on aspects of Google, Bing and Tineye’s reverse image search but proved very slow for larger images. This previous iteration relied on finding sets of three key points to create triangles which were cross-referenced against the images in our database. The new algorithm uses a single point to define an arbitrary local feature which is subsequently cross-referenced against the images in our database.
+            </p>
+            <h2>The Solution</h2>
+            <p>
+                The first step in our solution is to pre-process the image in our database. For each image, we select n points in the image and use them to identify “key shapes”. These key shapes can be thought of as identifying features which allow us to match our input image to an image in our database.
+            </p>
+            <p>
+                Once we have extracted our shapes, we can divide the next step into three independent problems. For the purposes of clarity, we will treat these problems sequentially but they can be approached in any order.
+            </p>
+            <p>
+                First, we make our shape as “square” as possible<br>
+                Second, we scale the image so that the key shape takes up x% of the width of 100 units.
+                Finally, we compare our image against the 360 rotations in
+            </p>
+            <div class="text-center">
+                <img src="images/pasted%20image%200.png" width="400px">
+                <img src="images/pasted%20image%201.png" width="400px">
+            </div>
+            <p>
+                We find a common transformation for the shapes (a common output shape for two input shapes that are the
+                same but only have different transformations applied)
+            </p>
+            <h2>how do we find a common shape?</h2>
+            <p>
+                We can break this problem into 3 independent problems.
+            </p>
+
+            <p>
+                -Find a common rotation
+            </p>
+            <div class="basicFullDemoWrapper text-center">
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth600px">
+                            <canvas class="canvasInline" height="300" id="basicFullDemo2Side1" style="opacity:0.8;"
+                                    width="300"></canvas>
+                            <canvas class="canvasInline" height="300" id="basicFullDemo2Side1_ui" width="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth600px">
+                            <canvas class="canvasInline" height="300" id="basicFullDemo2Side2" style="opacity:0.8;"
+                                    width="300"></canvas>
+                            <canvas class="canvasInline" height="300" id="basicFullDemo2Side2_ui" width="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p>
+                -Find a common scale for the input shapes
+            </p>
+            <div class="basicFullDemoWrapper text-center">
+                <span>area1: 000</span>
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth600px">
+                            <canvas class="canvasInline" height="300" id="basicFullDemo3Side1" style="opacity:0.8;"
+                                    width="300"></canvas>
+                            <canvas class="canvasInline" height="300" id="basicFullDemo3Side1_ui"
+                                    width="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth600px">
+                            <canvas class="canvasInline" height="300" id="basicFullDemo3Side2" style="opacity:0.9;"
+                                    width="300"></canvas>
+                            <canvas class="canvasInline" height="300" id="basicFullDemo3Side2_ui"
+                                    width="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <span> area2: 000</span>
+            </div>
+            <p>
+                -Find a common transformation for the input shapes
+            </p>
+            <div class="basicFullDemoWrapper text-center">
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth600px">
+                            <canvas class="canvasInline" height="300" id="basicFullDemoSide1" style="opacity:0.8;"
+                                    width="300"></canvas>
+                            <canvas class="canvasInline" height="300" id="basicFullDemoSide1_ui"
+                                    width="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth600px">
+                            <canvas class="canvasInline" height="300" id="basicFullDemoSide2" style="opacity:0.8;"
+                                    width="300"></canvas>
+                            <canvas class="canvasInline" height="300" id="basicFullDemoSide2_ui"
+                                    width="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <h2>How do we actually do it?</h2>
+            <p>
+                Finding a common scale is easy, we just scale the images until the shapes both have some arbitrarily chosen area (say 1000 pixels).
+            </p>
+            <p>
+                I haven't come up with a good way of finding a common rotation so for a temporary fix I repeat the
+            algorithm 360 times changing the rotation by 1 degree each time.
+            </p>
+            <p>
+                Finding a common transformation is more complicated and requires a more in depth explanation and some
+            maths.
+            </p>
+            <h2>Finding a common transformation</h2>
+            <p>
+                Firstly we’re ONLY going to handle images that have had 2d affine transformations applied to them. So we can say for sure that each image will be a 2d affine transformed version of a matching image. Most importantly working with only 2d affine transformations makes the maths doable. So what are 2d affine transformations? they are any transformation which can be expressed with a 2x2 matrix.
+                Here's an example
+            </p>
+            <div class="text-center">
+                <script id="MathJax-Element-2" type="math/asciimath">f(a,b,c,d)=["Input Shape"]*[[a,b],[c,d]]=ubrace([[1,1],[-1,1],[-1,-1],[1,-1]])_("Input x, y coordinates")*[["_v10","_v11"],["_v12","_v13"]]=ubrace([["_v20","_v21"],["_v22","_v23"],["_v24","_v25"],["_v26","_v27"]])_("Output x, y coordinates")</script>
+            </div>
+            <div class="text-center">
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth400px">
+                            <canvas class="canvasInline" height="400" id="basicSquareDemo" width="400"></canvas>
+                            <canvas class="canvasInline" height="400" id="basicSquareDemo_ui" width="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p>
+                Now let's normalising the shape. By normalise the shape what we really mean is to distribute the area of the shape evenly in every direction.
+                By breaking the process into steps and normalising the shape first and then handling scaling and
+                rotation in later steps
+            </p>
+            <p>
+                we can reduce the number of parameters in our transformation matrix from 4 parameters:
+            </p>
+            <div class="equationDiv">
+                <script id="basicTransformationEquation" type="math/asciimath">
+                    f(a,b,c,d) = [[a,b],[c,d]]
+                </script>
+            </div>
+            <p>
+                to 2 parameters:
+            </p>
+            <div class="equationDiv">
+                <script id="twoParameterEquation" type="math/asciimath">
+                    f(a,b) = [[a,b],[0,1/b]]
+                </script>
+            </div>
+            <p>
+                We can do this by extracting a rotation and scale matrix from our matrix
+            </p>
+            <div class="equationDiv">
+                <script id="rotationAndScaleSplit" type="math/asciimath">
+                    f(a,b,c,d) = ["rotation_matrix"]*["uniform_scale_matrix"]*[[a,b],[0,1/a]]
+                </script>
+            </div>
+            <p>
+                And then dropping the rotation and uniform scale parts of the equation (because we’re going to handle rotation and uniform scale in later steps). Now we have a matrix which represents all transformations minus uniform scale and rotation.
+            </p>
+
+            <div class="text-center">
+                <script id="twoParameterEquationAgain" type="math/asciimath">f(a,b) = ["Input Shape"] * [[a,b],[0,1/b]]=f("_v90","_v91") = [[1,1],[-1,1],[-1,-1],[1,-1]]*[["_v30","_v31"],["_v32","_v33"]]=[["_v40","_v41"],["_v42","_v43"],["_v44","_v45"],["_v46","_v47"]]</script>
+            </div>
+            <div class="text-center">
+                <div class="demowrap">
+                    <div class="linebreak">
+                        <div class="canvasWrapper fixedWidth400px">
+                            <canvas class="canvasInline" height="400" id="basicSquareDemoRis"
+                                    width="400"></canvas>
+                            <canvas class="canvasInline" height="400" id="basicSquareDemoRis_ui"
+                                    width="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <p>
+                    Notice how we lose the ability to change the rotation and area with changes to the input
+                    parameters.
+                </p>
+            </div>
+            
+            <p>
+                Now to normalise our shape:
+                By normalise the shape what we really mean is we want to reduce the distance from the center of the
+                shape to every point in the shape.
+                First we'll start by minimising a function which gives us the sum of the squared distance* to each edge in our polygon.
+            </p>
+            <p>
+                *we should really take the distance rather than the squared distance but taking the squared distance still gives us a good result and is much easier to differentiate later.
+            </p>
+            <p>
+                Our function is:
+            </p>
+            <div class="equationDiv">
+                <script id="simpleFunction" type="math/asciimath">
+                    f(shape) = sumx_i^2+y_i^2
+                </script>
+            </div>
+            <p>
+                Now apply our transformation matrix to each point
+            </p>
+            <div class="equationDiv">
+                <script id="withTransformationFunctionMatrix" type="math/asciimath">
+                    ubrace([[x,y]])_("Input point")*[[a,b],[0,1/b]]=ubrace([[ax+by,y/b]])_("Output point")
+                </script>
+            </div>
+            <p>
+                and fill in the new values for x and y
+            </p>
+            <div class="equationDiv">
+                <script id="withTransformationFunction" type="math/asciimath">
+                    f(shape,a,b) = sum[(ax_i+by_i)^2+(y_i/a)^2]
+                </script>
+            </div>
+            <p>
+                now let's clean this up a little to make it easier to manipulate
+            </p>
+            <div class="equationDiv">
+                <script id="withTransformationFunctionExpanded" type="math/asciimath">
+                    f(shape,a,b) = sum[a^2x_i^2+2aby_ix_i+b^2y_i^2+1/a^2(y_i)^2]
+                </script>
+            </div>
+            <div class="equationDiv">
+                <script id="withTransformationFunctionExapanded2" type="math/asciimath">
+                    f(shape,a,b) = a^2sum[x_i^2]+2ab sum[y_ix_i]+b^2sum[y_i^2]+1/a^2sum[y_i^2]
+                </script>
+            </div>
+            <p>
+                If we plot this function for our square it looks like this:
+            </p>
+            <div class="text-center">
+                <script id="withTransformationFunctionFilled" type="math/asciimath">
+                    f(shape,"_v80","_v81") = "_v82"^2*"_v88"+2*"_v83"*"_v84" *"_v810"+"_v85"^2*"_v811"+("_v89"/"_v86"^2)="_v87"
+                </script>
+            </div>
+            <style>
+                #scene {
+                    top: 0px !important;
+                    left: 0px !important;
+                    width: 600px !important;
+                    height: 400px !important;
+                }
+            </style>
+            <figure class="text-center">
+                <div id="myDiv" style="width: 600px; height: 401px; display: inline-block"></div>
+                <div style="height: 402px; width: 402px; display: inline-block">
+                    <div class="linebreak">
+                        <div class="canvasWrapper">
+                            <canvas class="canvasInline" height="400" id="basicSquareDemo2" width="400"></canvas>
+                            <canvas class="canvasInline" height="400" id="basicSquareDemo2_ui" width="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <figcaption>
+                   The bottom axises are a and b in our transformation matrix and the vertical axis is the output of our function
+                </figcaption>
+            </figure>
+            <p>
+                You can see from the above graph that the local minimum of this function is the values which also give
+                us the most square square.
+                So if we find the values of a and b which minimise this function they will be the same values of a and b
+                which normalise our shape.
+            </p>
+            <p>
+                To minimise the function first get the derivatives of the function with respect to a and b:
+            </p>
+            <p>
+                set the derivatives to zero and solve to get the following equations for a and b
+                So these are the equations for the values of a and b in the transformation matrix
+            </p>
+            <p>
+                So we take this function from above
+            </p>
+            <div class="equationDiv">
+                <script id="withTransforma" type="math/asciimath">
+                    f(shape, a, b) = a^2sum x^2 +2ab sum yx +b^2sum y^2 +1/a^2sum[y^2]
+                </script>
+            </div>
+            <p>
+                and differentiate with respect to a and b
+            </p>
+            <div class="equationDiv">
+                <script id="aDerivative_1" type="math/asciimath">
+                    (df(shape, a,b))/(da) = 2asum[x_i^2]+2b sum[y_ix_i]-(2(sum[y_i^2])/a^3)
+                </script>
+            </div>
+            <div class="equationDiv">
+                <script id="bDerivative_1" type="math/asciimath">
+                    (df(shape, a,b))/(db) = 2a sum[y_ix_i]+2bsum[y_i^2]
+                </script>
+            </div>
+            <p>
+                ...the lowest point/global minimum is when the derivatives/rate of change is 0...
+             </p>
+            <div class="equationDiv">
+                <script id="bDerivative_15" type="math/asciimath">
+                     0 = 2a sum[y_ix_i]+2bsum[y_i^2]
+                </script>
+            </div>
+            <p>
+                ...isolate b...
+            </p>
+            <div class="equationDiv">
+                <script id="bDerivative_2" type="math/asciimath">
+                    b = -(a sum[y_ix_i])/(sum[y_i^2])
+                </script>
+            </div>
+            <p>
+                ...substitute in b...
+            </p>
+            <div class="equationDiv">
+                <script id="aDerivative_2" type="math/asciimath">
+                    0 = 2asum[x_i^2]+2(-(a sum[y_ix_i])/(sum[y_i^2])) sum[y_ix_i]-(2(sum[y_i^2])/a^3)
+                </script>
+            </div>
+            <p>
+                ...isolate a...
+            </p>
+            <div class="equationDiv">
+                <script id="aDerivative_4dfd"  type="math/asciimath">
+                    a^4 = (sum[y_i^2]^2)/(sum[x_i^2]sum[y_i^2]-sum[y_ix_i]^2)
+                </script>
+            </div>
+            <p>
+                so our final 2 equations for a and b are:
+            </p>
+            <div class="equationDiv">
+                <script id="aDerivative" type="math/asciimath">
+                    a = root(4)( (sum(y_i^2)^2) / (sum(x_i^2)*sum(y_i^2) - sum(x_iy_i)^2)  )
+                </script>
+            </div>
+            <div class="equationDiv">
+                <script id="bDerivative_2_" type="math/asciimath">
+                    b = -(a sum(y_ix_i))/(sum(y_i^2))
+                </script>
+            </div>
+            <p>
+                which when applied to our shape gives us a normalised shape.
+            </p>
+            <p>
+                The cool thing about solving something analytically is that after we do all that maths we're left with a really small simple function.
+                For example our answer in pseudo code is:
+            </p>
+            <code>
+<pre>
+//Get the 2 parameters of a transformation matrix [[a,b],[0,1/a]] which will spread our input shape out evenly in all directions
+//xs = the sum of the square of all the x values of all our points in our shape
+//xy = the sum of the square of all the y values of all our points in our shape
+//xy = the sum of the product of all the y*x values of all our points in our shape
+
+function get_a(xs, ys, xy) {
+    return sqrt(sqrt( pow(ys ,2)/(xs*ys - pow(xy, 2)) ))
+}
+
+function get_b(xs, ys, xy) {
+    return get_a(xs, ys, xy) * (-xy/ys)
+}
+</pre>
+            </code>
+            <p>
+                We now have an algorithm which works on a set of points. The example above have been using the edge points of the polygons but this doesn't work if the outline/shape changes slightly or if we describe the same shape but with different edges.
+            </p>
+            <p>
+                To make our algorithm work on shapes which are very similar we need to take into account every single point in the shape.
+            </p>
+            <p>
+                So in our equations for 'a' and 'b' we now need to calculate
+                <script id="xsquaresum"  type="math/asciimath">
+                    sum[y_i^2]
+                </script>,
+                <script id="xsq333uaresum"  type="math/asciimath">
+                    sum[x_i^2]
+                </script>
+                and
+                <script id="xsqu3434aresum"  type="math/asciimath">
+                    sum[y_ix_i]
+                </script>
+                for all of the infinite points inside our shape.
+            </p>
+            <p>
+                Summing up these values for an infinite number would give us an infinitely high value.
+                So instead we'll compute the average values for
+                <script id="xsquar3434esum"  type="math/asciimath">
+                    y_i^2
+                </script>,
+                <script id="xsq333u3434aresum"  type="math/asciimath">
+                    x_i^2
+                </script>
+                and
+                <script id="xsqu34343434aresum"  type="math/asciimath">
+                    y_ix_i
+                </script>
+                of all the points using integration.
+            </p>
+            <p>
+                So our equations for 'a' and 'b' become:
+            </p>
+            <div class="equationDiv">
+                <script id="aDerdfdsfdfsivative" type="math/asciimath">
+                   a = root(4)( (sum(y_i^2)^2) / (sum(x_i^2)*sum(y_i^2) - sum(x_iy_i)^2)  )   ->    a = root(4)( ((sum(y_i^2))/n)^2 / ( (sum(x_i^2))/n*(sum(y_i^2))/n - ((sum(x_iy_i))/n)^2 )
+                </script>
+            </div>
+            <div class="equationDiv">
+                <script id="bDerdfsdffixmeivative_2_" type="math/asciimath">
+                   b = -(a sum(y_ix_i))/(sum(y_i^2))
+                </script>
+                <script id="arrowRightBValue" type="math/asciimath">
+                    ->
+                </script>
+                <script id="bDerdfsdffidfdfxmeivative_2_" type="math/asciimath">
+                   b = -(a (sum(y_ix_i))/n)/((sum(y_i^2))/n)
+                </script>
+            </div>
+            <p>
+                To compute the values of
+                <script id="bDerdffddfdsdffidfdfxmeivative_2_" type="math/asciimath">
+                   (sum(y_i^2))/n
+                </script>
+                ,
+                <script id="bDerddfdfffddfdsdffidfdfxmeivative_2_" type="math/asciimath">
+                   (sum(x_i^2))/n
+                </script>
+                and
+                <script id="bDerfdfddffddfdsdffidfdfxmeivative_2_" type="math/asciimath">
+                   (sum(y_ix_i))/n
+                </script>
+                we will break our polygon into segments and combine the values of each segment at the end.
+            </p>
+            <p>
+                Each segment (from one point to another) can be expressed as a line which will fit the equation of a line:
+                <script id="bDerdffddfdsdffidfdfxmeivfdsfdsfative_2_dfd" type="math/asciimath">
+                   y = mx+c
+                </script>
+                .
+                We can use integration on each of these line segments to get to get the average value of
+                <script id="bDerdffddfdsdffidfdfxmeivfdsfdsfative_2_" type="math/asciimath">
+                   y_i^2
+                </script>
+                ,
+                <script id="bDerddfdfffddfdsdffidfsdfdfdfxmeivative_2_" type="math/asciimath">
+                   x_i^2
+                </script>
+                and
+                <script id="bDerfdfddffddfdsdffdfdsfdsfidfdfxmeivative_2_" type="math/asciimath">
+                   y_ix_i
+                </script>
+                for every point under the line.
+            </p>
+            <img width="800px" src="./images/Screen%20Shot%202020-08-01%20at%2011.07.01%20AM.png" />
+            <p>
+                At any x value on our line the average value of y^2 of all the points from y = 0 straight up to the line is. p is the current point on the y axis
+            </p>
+            <div class="equationDiv">
+                <script id="aDerivative12321" type="math/asciimath">
+                    1/(mx+c)*int_0^(mx+c)p^2 dp = (mx+c)^3/(3*(mx+c)) = (mx+c)^2/(3)
+                </script>
+            </div>
+            <p>
+                So at any x point on our line that is the average value of y^2 but we want the average for every x point.
+                To do this we'll create a new function where the y value of each x coordinate is the average of our
+                previous function multiplied by the size of the y value of that point. Then the average value of that
+                new function divided by the area of our previous function will be the average value of y^2.
+            </p>
+            <div class="equationDiv">
+                <script id="aDere12321" type="math/asciimath">
+                    (sum(y_i^2))/n = 1/3*(int_(x_1)^(x_2)(mx+c)^3dx)/(int_(x_1)^(x_2)(mx+c)dx)
+                </script>
+            </div>
+
+            //update the equations on the paper
+            //each vertex...to the line
+            //update the equations here
+            //commit and publish
+
+
+            <p>
+                we'll use the same logic for the average value of x*y. The average value at any x coordinate on our polygon segment
+            </p>
+            <div class="equationDiv">
+                <script id="aDeridfsdfvative12321" type="math/asciimath">
+                    1/(mx+c)*int_0^(mx+c)(x*p)dp = (x*(mx+c)^2)/(2*(mx+c)) = ((mx+c)*x)/(2)
+                </script>
+            </div>
+            <p>
+                and the average x*y value at every single x coordinate
+            </p>
+            <div class="equationDiv">
+                <script id="aDeride43fsdfvative12321" type="math/asciimath">
+                    (sum(y_ix_i))/n = 1/2*(int_(x_1)^(x_2)x*(mx+c)^2dx)/(int_(x_1)^(x_2)(mx+c)dx)
+                </script>
+            </div>
+            <p>
+
+            </p>
+            <div class="footer">
+                <hr>
+                Credit to ascii math/3blue1brown/plotly/distill.pub
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="scripts/jquery.min.js"></script>
+<script src="scripts/jquery-3.3.1.slim.min.js"></script>
+<script src="scripts/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+<script src="scripts/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+<!-- Plotly.js -->
+<script src="scripts/plotly-latest.js"></script>
+
+<script src="scripts/shapes.js"></script>
+<script src="scripts/common.js"></script>
+<script src="scripts/downscale.js"></script>
+<script src="scripts/drawWrappers.js"></script>
+<script src="scripts/matrixMaths.js"></script>
+<script src="scripts/nelderMead.js"></script>
+<script src="scripts/phash.js"></script>
+<script src="scripts/polygonFuncs.js"></script>
+<script src="scripts/transformOperations.js"></script>
+
+<script src="scripts/stackblur.js"></script>
+<script src="scripts/math.min.js"></script>
+<script src="scripts/main.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=AM_CHTML"></script>
+<!--<script src="scripts/latest.js?config=AM_CHTML"></script>-->
+<script src="scripts/ASCIIMathML.js" type="text/html"></script>
+<script src="scripts/marvinj-0.9.js"></script>
+<script src="scripts/animations.js"></script>
+
+</body>
+
