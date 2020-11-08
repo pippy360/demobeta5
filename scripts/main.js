@@ -367,7 +367,6 @@ function getScaleVal() {
 
 function getk2val(inshape) {
     return getk2val_shape(inshape);
-    // var xs_sum = 0;
     // var ys_sum = 0;
     // var xy_mult_sum = 0;
     // for (let i = 0; i < inshape.length; i++) {
@@ -653,9 +652,6 @@ function getk2val_shape(shape) {
 
 function letGetTheValsForAPoly(shape) {
     let cPoint = [0,0];
-    // shape = applyTransformationMatrixToAllKeypoints(shape, getSkewMatrix(45, 0));
-    // shape = applyTransformationMatrixToAllKeypoints(shape, getScaleMatrix(2, 1));
-    // shape = applyTransformationMatrixToAllKeypoints(shape, getRotationMatrix(45));
     let topHalfBottomHalf = splitShapeHorz_m(shape, cPoint);
     let bottomHalf = topHalfBottomHalf[0];
     let topHalf = topHalfBottomHalf[1];
@@ -678,7 +674,6 @@ function letGetTheValsForAPoly(shape) {
     let vals1_tl = getAverageXYValForPoly(topLeft);
     let total_val1 = Math.abs(vals1_tr.y_bar * topRightArea) + Math.abs(vals1_bl.y_bar * bottomLeftArea) - Math.abs(vals1_tl.y_bar * topLeftArea) - Math.abs(vals1_br.y_bar * bottomRightArea);
     total_val1 /= totalArea;
-    // console.log( total_val1 );
 
     let vals2_tr = getAverageYSquaredValForPoly(topRight);
     let vals2_bl = getAverageYSquaredValForPoly(bottomLeft);
@@ -686,7 +681,6 @@ function letGetTheValsForAPoly(shape) {
     let vals2_tl = getAverageYSquaredValForPoly(topLeft);
     let total_val2 = Math.abs(vals2_tr.y_bar * topRightArea) + Math.abs(vals2_bl.y_bar * bottomLeftArea) + Math.abs(vals2_tl.y_bar * topLeftArea) + Math.abs(vals2_br.y_bar * bottomRightArea);
     total_val2 /= totalArea;
-    // console.log(total_val2);
 
     let vals3_tr = getAverageXSquaredValForPoly(topRight);
     let vals3_bl = getAverageXSquaredValForPoly(bottomLeft);
@@ -695,7 +689,6 @@ function letGetTheValsForAPoly(shape) {
 
     let total_val3 = Math.abs(vals3_tr.y_bar * topRightArea) + Math.abs(vals3_bl.y_bar * bottomLeftArea) + Math.abs(vals3_tl.y_bar * topLeftArea) + Math.abs(vals3_br.y_bar * bottomRightArea);
     total_val3 /= totalArea;
-    // console.log(total_val3);
 
     const ys_sum = Math.abs(total_val2);
     const xs_sum = Math.abs(total_val3);
@@ -711,24 +704,6 @@ function letGetTheValsForAPoly(shape) {
         xy_mult_sum: xy_mult_sum,
         ratioOfY_XY: xy_mult_sum/ys_sum,
     }
-    // console.log(skewval)
-    // console.log(getAverageXYValForPoly(topRight));
-    // console.log(getAverageXYValForPoly(bottomLeft));
-    //
-    // console.log(getAverageXYValForPoly(topLeft));
-    // console.log(getAverageXYValForPoly(bottomRight));
-    //
-    // console.log(getAverageXSquaredValForPoly(topRight));
-    // console.log(getAverageXSquaredValForPoly(bottomLeft));
-    //
-    // console.log(getAverageXSquaredValForPoly(topLeft));
-    // console.log(getAverageXSquaredValForPoly(bottomRight));
-    //
-    // console.log(getAverageYSquaredValForPoly(topRight));
-    // console.log(getAverageYSquaredValForPoly(bottomLeft));
-    //
-    // console.log(getAverageYSquaredValForPoly(topLeft));
-    // console.log(getAverageYSquaredValForPoly(bottomRight));
 
 }
 
@@ -1468,22 +1443,23 @@ function getSumVal(shape, a, b, maxSumVal) {
     return result;
 }
 
-function getDataForShape(inShape, xAxisMult, xAxisAdd, yAxisMult, yAxisAdd, axisRes, maxSumVal, xAxisAddFinal, yAxisAddFinal) {
+function getDataForShape(inShape, xAxisMult, xAxisAdd, yAxisMult, yAxisAdd, axisRes, maxSumVal, xAxisAddFinal,
+                         yAxisAddFinal) {
     let z2 = [];
     let x2 = [];
     let y2 = [];
 
     for (let i = 0; i < axisRes; i++) {
-        let ifq = (axisRes-1) - i;
-        x2.push((ifq + xAxisAdd) * xAxisMult + xAxisAddFinal);
-        y2.push((ifq + yAxisAdd) * yAxisMult + yAxisAddFinal);
+        // let ifq = (axisRes-1) - i;
+        x2.push(i * xAxisMult + xAxisAddFinal);
+        y2.push(i * yAxisMult + yAxisAddFinal);
     }
 
     for (let i = 0; i < axisRes; i++) {
         let z2_row = [];
         for (let j = 0; j < axisRes; j++) {
-            let a = (i + xAxisAdd) * xAxisMult + xAxisAddFinal;
-            let b = (j + yAxisAdd) * yAxisMult + yAxisAddFinal;
+            let a = (j + xAxisAdd) * xAxisMult + xAxisAddFinal;
+            let b = (i + yAxisAdd) * yAxisMult + yAxisAddFinal;
 
             z2_row.push(getSumVal(inShape, a, b, maxSumVal));
         }
@@ -1491,8 +1467,8 @@ function getDataForShape(inShape, xAxisMult, xAxisAdd, yAxisMult, yAxisAdd, axis
     }
     return {
         z: z2,
-        y: x2,
-        x: y2,
+        y: y2,
+        x: x2,
         type: 'surface',
         colorscale: [
             [0, 'rgb(255,255,255)'],
@@ -1501,19 +1477,19 @@ function getDataForShape(inShape, xAxisMult, xAxisAdd, yAxisMult, yAxisAdd, axis
     };
 }
 
-function getDataForSquareDemo2() {
-    const axisRes = 50;
-    return getDataForShape(square_shape_inner, .72 * .03 * (axisRes / 100),
-        13, .72 * .2 * .24 * (axisRes / 100), -(axisRes / 2), axisRes, 50, 0, 0)
+function getDataForSquareDemo(fixedShape, inShape) {
+    return getDataForShape(fixedShape,
+        inShape.xAxisMult,
+        inShape.xAxisAdd,
+        inShape.yAxisMult,
+        inShape.yAxisAdd,
+        inShape.axisRes,
+        inShape.maxSumVal,
+        inShape.xAxisAddFinal,
+        inShape.yAxisAddFinal,
+        inShape.xscale,
+        inShape.yscale);
 }
-
-function getDataForSquareDemo() {
-    ///.....
-    const axisRes = 50;
-    return getDataForShape(shape1_shape, .012, 0, .04, 0, 50, 4000000, -0.99, -.8)
-}
-
-
 
 function abtoSelection(a, b, plotlyplot) {
 
@@ -1529,41 +1505,105 @@ function abtoSelection(a, b, plotlyplot) {
     }
 }
 
-g_addPlotlyPlotsCallback = function (addedPlot) {
-    console.log(addedPlot);
-    g_plotlyplots[0].handlePick(abtoSelection(1, 1, g_plotlyplots[0]));
-};
+let g_scale_shape = 1;
+let g_plot;
 
-function g_handlePick(a, b) {
-    g_plotlyplots[0].handlePick(abtoSelection(a, b, g_plotlyplots[0]));
+function setGplot(inputShape) {
+    const transpt = findCentroid(inputShape.shape);
+    debugger;
+    let transx = transpt[0];
+    let transy = transpt[1];
+    const inshape = applyTransformationMatrixToAllKeypoints(
+        inputShape.shape, getTranslateMatrix(-transx, -transy));
+    //data being passed in is junk
+    g_plot = Plotly.newPlot('myDiv', [getDataForSquareDemo(inshape, inputShape)], {
+        scene: {
+            xaxis: {title: 'a'},
+            yaxis: {title: 'b'},
+            zaxis: {title: 'f(a, b)'},
+        }
+    });
+
+    let demo = addSquareDemo2(inshape, inputShape.xscale);
+
+    let myPlot = document.getElementById('myDiv');
+    myPlot.on('plotly_hover', function (data) {
+        demo.draw(data.points[0].x, data.points[0].y, inputShape.img, transpt);
+    });
 }
 
-let g_pick_a = 1;
-let g_pick_b = 1;
-function setabongraph(setx, sety) {
-    g_pick_a = setx;
-    g_pick_b = sety;
+const triangle_shape_wrap = {
+    shape: triangle_shape,
+    inShape: 0,
+    xAxisMult: .1,
+    xAxisAdd: 0,
+    yAxisMult: .1,
+    yAxisAdd: 0,
+    axisRes: 50,
+    maxSumVal: 100000,
+    xAxisAddFinal: -1,
+    yAxisAddFinal: -1,
+    yscale: 1,
+    xscale: 1,
+    img: null,
 }
 
-g_addPlotlySceneCallback = function (addedScene) {
-    // console.log(addedScene);
-    // g_plotlyplots[0].surface.highlight({dataCoordinate: [0.708888888888888, .7777, .2818], level: [-1, -1, -1]});
-    // g_plotlyscene[0].glplot.spikes.position = [0.708888888888888, .7777, .2818];
-    // g_plotlyscene[0].glplot.redraw();
+const square_shape_wrap = {
+    shape: square_shape_small,
+    inShape: 0,
+    xAxisMult: .05,
+    xAxisAdd: 0,
+    yAxisMult: .05,
+    yAxisAdd: 0,
+    axisRes: 50,
+    maxSumVal: 50,
+    xAxisAddFinal: 0,
+    yAxisAddFinal: -1,
+    yscale: 70,
+    xscale: 70,
+    img: null,
+}
+
+const circle_shape_small_wrapper = {
+    shape: circle_shape_small,
+    inShape: 0,
+    xAxisMult: .05,
+    xAxisAdd: 0,
+    yAxisMult: .05,
+    yAxisAdd: 0,
+    axisRes: 50,
+    maxSumVal: 50,
+    xAxisAddFinal: 0,
+    yAxisAddFinal: -1,
+    yscale: 70,
+    xscale: 70,
+    img: null,
+}
+circle_shape_small_wrapper.img = new Image();
+circle_shape_small_wrapper.img.src = "images/boo.jpg";
+
+const shape1_shape_wrapper = {
+    shape: shape1_shape,
+    inShape: 0,
+    xAxisMult: .05,
+    xAxisAdd: 0,
+    yAxisMult: .05,
+    yAxisAdd: 0,
+    axisRes: 50,
+    maxSumVal: 50,
+    xAxisAddFinal: 0,
+    yAxisAddFinal: -1,
+    yscale: 1,
+    xscale: 1,
+    img: null,
+}
+shape1_shape_wrapper.img = new Image();
+shape1_shape_wrapper.img.src = "images/image.png";
 
 
-};
-
-
-var g_plot = Plotly.newPlot('myDiv', [getDataForSquareDemo()], {
-    scene: {
-        xaxis: {title: 'a'},
-        yaxis: {title: 'b'},
-        zaxis: {title: 'f(a, b)'},
-    }
-});
-var myPlot = document.getElementById('myDiv');
-myPlot.on('plotly_hover', function (data) {
-    g_pick_a = data.points[0].x;
-    g_pick_b = data.points[0].y;
+document.addEventListener("DOMContentLoaded", function() {
+    setGplot(square_shape_wrap);
+    // setGplot(triangle_shape_wrap);
 })
+
+
